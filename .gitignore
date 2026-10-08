@@ -10,6 +10,10 @@
 # 由 scripts/launch.py 生成（内容就是你当次载入的名单）
 skills/random-picker/web/preload.js
 
+# 放名单的文件夹：双击「点名.bat」会自动用这里的第一份名单。
+# 整目录忽略 —— 这里放的往往是真实名单（含学号电话）。
+roster/
+
 # Python
 __pycache__/
 *.py[cod]

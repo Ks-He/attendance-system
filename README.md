@@ -12,11 +12,20 @@
 
 ## 快速开始
 
-### 方式一：直接双击（不需要 Python）
+### 方式一：双击 `点名.bat`（Windows 最省事）
+
+把名单文件丢进 `roster/` 文件夹，然后双击仓库根目录的 `点名.bat`。它会自动
+挑 `roster/` 里的第一份名单（优先 `.xlsx`，然后 `.csv`、`.txt`），载入并打开
+浏览器。`roster/` 是空的就只开一个空白页面。
+
+> `roster/` 整个文件夹在 `.gitignore` 里 —— 真实名单（往往带学号、电话）
+> 放这儿不会被推到公开仓库。示例数据请用 `sample-roster.txt` 那种虚构姓名。
+
+### 方式二：直接双击网页（不需要 Python）
 
 打开 `skills/random-picker/web/index.html`，把名单文件拖进页面，按空格开始抽。
 
-### 方式二：命令行预载名单（推荐）
+### 方式三：命令行预载名单（推荐）
 
 ```bash
 cd skills/random-picker
@@ -28,7 +37,7 @@ python scripts/launch.py --names "张三,李四,王五"   # 直接给名字
 > 用 `python`，**不要用 `python3`** —— Windows 上 `python3` 往往是微软商店的
 > 跳转桩，在非交互 shell 里静默无输出。
 
-### 方式三：装成 Claude Code 技能
+### 方式四：装成 Claude Code 技能
 
 ```bash
 python install.py
@@ -64,6 +73,8 @@ python install.py
 ## 目录结构
 
 ```
+├── 点名.bat                       Windows 一键启动：双击即载入 roster/ 里的名单
+├── roster/                        放名单的文件夹（整体 gitignore，不会外泄）
 ├── install.py                     把技能装到 ~/.claude/skills/
 ├── LICENSE                        MIT
 ├── README.md
