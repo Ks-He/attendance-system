@@ -16,6 +16,7 @@
   var ROLL_MAX_MS = 190;       // 滚动最大间隔
   var ROLL_MIN_TOTAL = 1300;   // 滚动总时长下限
   var ROLL_MAX_TOTAL = 1900;   // 滚动总时长上限
+  var ROLL_MIN_BEFORE_STOP = 500;  // 手动停止前至少要滚这么久，免得误双击一下把动画掐没
 
   var state = {
     entries: [],     // [{ id, name }]  同名的人各占一条，不做去重
@@ -23,6 +24,7 @@
     currentId: null,
     nextId: 1,
     spinning: false,
+    stopRequested: false,   // 滚动中再次点击/按空格 → 请求提前停下
     source: ''
   };
 
@@ -378,6 +380,7 @@
     if (!pool.length) { toast('名单已经抽完了，点「重置进度」重新开始', 'error'); return; }
 
     state.spinning = true;
+    state.stopRequested = false;
     render();
 
     var winnerId = pool[randomInt(pool.length)];
@@ -389,6 +392,8 @@
       var total = ROLL_MIN_TOTAL + randomInt(ROLL_MAX_TOTAL - ROLL_MIN_TOTAL);
       var delay = ROLL_START_MS;
       while (performance.now() - startedAt < total) {
+        // 手动停止：滚够 ROLL_MIN_BEFORE_STOP 之后才认，避免误双击直接掐掉动画
+        if (state.stopRequested && performance.now() - startedAt >= ROLL_MIN_BEFORE_STOP) break;
         nameEl.textContent = state.entries[pool[randomInt(pool.length)]].name;
         await sleep(delay);
         delay = Math.min(Math.round(delay * 1.13) + 1, ROLL_MAX_MS);
@@ -398,9 +403,17 @@
     state.drawn.push(winnerId);
     state.currentId = winnerId;
     state.spinning = false;
+    state.stopRequested = false;
     persist();
     render();
     srSay('抽中 ' + winner.name + '，还剩 ' + (state.entries.length - state.drawn.length) + ' 人');
+  }
+
+  /* 滚动中再次点击按钮 / 按空格 → 立刻停下揭晓。
+     中奖者在动画开始前就已选定（上面的 winnerId），这里只是提前结束视觉滚动，
+     所以不影响随机性与公平性。 */
+  function requestStop() {
+    if (state.spinning) state.stopRequested = true;
   }
 
   function undo() {
@@ -446,7 +459,9 @@
       }
     }
 
-    if (!total) {
+    if (state.spinning) {
+      hintEl.innerHTML = '再按一次 <kbd>空格</kbd> 立刻停下看结果';
+    } else if (!total) {
       hintEl.innerHTML = '点「导入名单」，或把 .txt / .csv / .xlsx 文件直接拖进来';
     } else if (!remaining) {
       hintEl.innerHTML = '名单已抽完，点「重置进度」重新开始';
@@ -457,8 +472,11 @@
     }
 
     var busy = state.spinning;
-    drawBtn.disabled = busy || !total || !remaining;
-    drawBtn.textContent = total && !remaining ? '已 抽 完' : '开 始 抽 取';
+    // 滚动期间主按钮保持可点：再点一次 = 立即停止
+    drawBtn.disabled = !total || !remaining;
+    drawBtn.textContent = busy
+      ? '停 止'
+      : (total && !remaining ? '已 抽 完' : '开 始 抽 取');
     undoBtn.disabled = busy || !state.drawn.length;
     resetBtn.disabled = busy || !state.drawn.length;
     editBtn.disabled = busy;
@@ -482,7 +500,9 @@
 
   /* ---------- 事件绑定 ---------- */
 
-  drawBtn.addEventListener('click', draw);
+  drawBtn.addEventListener('click', function () {
+    if (state.spinning) requestStop(); else draw();
+  });
   undoBtn.addEventListener('click', undo);
   resetBtn.addEventListener('click', reset);
 
@@ -511,7 +531,8 @@
 
     if (ev.code === 'Space' || ev.key === ' ') {
       ev.preventDefault();
-      if (!drawBtn.disabled) draw();
+      if (state.spinning) requestStop();
+      else if (!drawBtn.disabled) draw();
     } else if ((ev.ctrlKey || ev.metaKey) && (ev.key === 'z' || ev.key === 'Z')) {
       ev.preventDefault();
       undo();
