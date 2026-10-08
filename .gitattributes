@@ -1,0 +1,8 @@
+# 统一用 LF 存进仓库，避免 Windows 上出现整文件的换行符改动
+* text=auto eol=lf
+
+# 二进制/生成物
+*.png binary
+*.jpg binary
+*.ico binary
+*.xlsx binary

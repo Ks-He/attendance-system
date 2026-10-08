@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>随机点名 · Random Picker</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="app">
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-dot" aria-hidden="true"></span>
+      <h1>随机点名</h1>
+    </div>
+    <div class="stats" role="group" aria-label="抽取进度">
+      <span class="stat"><b id="stat-remaining">0</b><i>剩余</i></span>
+      <span class="stat-sep" aria-hidden="true">/</span>
+      <span class="stat"><b id="stat-total">0</b><i>总计</i></span>
+    </div>
+  </header>
+
+  <main class="layout">
+
+    <section class="stage">
+      <div class="name-wrap">
+        <div class="name" id="name-display" data-state="idle">准备就绪</div>
+      </div>
+      <p class="hint" id="hint">按 <kbd>空格</kbd> 或点下方按钮开始抽取</p>
+      <button class="draw-btn" id="draw-btn" type="button">开 始 抽 取</button>
+    </section>
+
+    <aside class="sidebar" aria-label="已抽名单">
+      <div class="panel-head">
+        <h2>已抽名单</h2>
+        <span class="badge" id="drawn-count">0</span>
+      </div>
+      <p class="empty-tip" id="drawn-empty">还没抽过</p>
+      <ol class="drawn-list" id="drawn-list"></ol>
+    </aside>
+
+  </main>
+
+  <footer class="toolbar">
+    <button id="import-btn" type="button" class="btn">导入名单</button>
+    <button id="edit-btn" type="button" class="btn">粘贴 / 编辑</button>
+    <button id="undo-btn" type="button" class="btn ghost">撤销一次</button>
+    <button id="reset-btn" type="button" class="btn ghost">重置进度</button>
+    <span class="toolbar-note" id="source-note">支持 .txt / .csv / .xlsx，也可以直接把文件拖进来</span>
+    <input type="file" id="file-input" accept=".txt,.csv,.xlsx,.xls,text/plain,text/csv" multiple hidden>
+  </footer>
+
+</div>
+
+<div class="drop-overlay" id="drop-overlay" aria-hidden="true">
+  <div class="drop-card">松开鼠标即可导入名单</div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div class="sr-only" id="sr-status" aria-live="polite"></div>
+
+<dialog class="dialog" id="edit-dialog">
+  <form method="dialog">
+    <h2>编辑名单</h2>
+    <p class="dialog-note">一行一个名字。也可以用逗号、顿号、空格或制表符分隔。</p>
+    <textarea id="edit-textarea" rows="14" spellcheck="false" placeholder="张三&#10;李四&#10;王五"></textarea>
+    <div class="dialog-actions">
+      <button value="cancel" class="btn ghost" type="submit">取消</button>
+      <button value="save" class="btn primary" type="submit" id="edit-save">保存名单</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- 可选的预载名单：由 scripts/launch.py --roster 生成，不存在时自动忽略 -->
+<script src="preload.js" onerror="void 0"></script>
+<script src="xlsx-lite.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
